@@ -132,3 +132,10 @@ input[type=submit] {
   align-self: start;
   min-width: 10em;
 }
+
+.rating-form {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: nowrap;
+}

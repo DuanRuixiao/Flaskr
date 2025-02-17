@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Post Details{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<article class="post">
+  <header>
+    <div>
+      <h1>{{ post['title'] }}</h1>
+      <div class="body">Author: {{ post['username'] }}</div>
+      <div class="body">Post Time: {{ post['created'].strftime('%Y-%m-%d') }}</div>
+    </div>
+  </header>
+  <p class="body">{{ post['body'] }}</p>
+
+  <!-- Display Average Rating -->
+  {% if post['rating_count'] > 0 %}
+    <p class="about">⭐ Average Rating: {{ "%.1f"|format(post['rating_total'] / post['rating_count']) }} from {{ post['rating_count'] }} ratings</p>
+  {% else %}
+    <p class="about">No ratings yet. Be the first to rate!</p>
+  {% endif %}
+
+  <!-- Rating Form -->
+  <div>
+    <form action="{{ url_for('blog.rate', id=post['id']) }}" method="post" class="rating-form">
+      <label class="about">Rate this post:</label>
+      <button type="submit" name="rating" value="1">⭐</button>
+      <button type="submit" name="rating" value="2">⭐⭐</button>
+      <button type="submit" name="rating" value="3">⭐⭐⭐</button>
+      <button type="submit" name="rating" value="4">⭐⭐⭐⭐</button>
+      <button type="submit" name="rating" value="5">⭐⭐⭐⭐⭐</button>
+    </form>
+  </div>
+
+</article>
+{% endblock %}

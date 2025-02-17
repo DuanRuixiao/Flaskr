@@ -29,13 +29,16 @@ def create():
         if not title:
             error = 'Title is required.'
 
+        if not body or len(body) < 10:
+            error = 'Body is required and at least 10 characters long.'
+
         if error is not None:
             flash(error)
         else:
             db = get_db()
             db.execute(
-                'INSERT INTO post (title, body, author_id)'
-                ' VALUES (?, ?, ?)',
+                'INSERT INTO post (title, body, author_id, rating_count, rating_total)'
+                ' VALUES (?, ?, ?, 0, 0)',
                 (title, body, g.user['id'])
             )
             db.commit()
@@ -45,7 +48,7 @@ def create():
 
 def get_post(id, check_author=True):
     post = get_db().execute(
-        'SELECT p.id, title, body, created, author_id, username'
+        'SELECT p.id, title, body, created, author_id, username, rating_count, rating_total'
         ' FROM post p JOIN user u ON p.author_id = u.id'
         ' WHERE p.id = ?',
         (id,)
@@ -94,3 +97,23 @@ def delete(id):
     db.execute('DELETE FROM post WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('blog.index'))
+
+@bp.route('/<int:id>/show', methods=('GET',))
+@login_required
+def show(id):
+    post = get_post(id, False)
+    return render_template('blog/show.html', post=post)
+
+@bp.route('/<int:id>/rate', methods=('POST',))
+@login_required
+def rate(id):
+    rating = int(request.form['rating'])
+    if rating < 1 or rating > 5:
+        abort(400)  # Invalid rating
+
+    db = get_db()
+    db.execute('UPDATE post SET rating_total = rating_total + ?, rating_count = rating_count + 1 WHERE id = ?',
+               (rating, id))
+    db.commit()
+    post = get_post(id)
+    return render_template('blog/show.html', post=post)
