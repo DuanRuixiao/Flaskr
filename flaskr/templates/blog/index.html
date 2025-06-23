@@ -15,12 +15,63 @@
           <h1 class="action">
             <a href="{{ url_for('blog.show', id=post['id']) }}">{{ post['title'] }}</a>
           </h1>
+          <div class="post-meta">
+            <span class="author">by {{ post['username'] }}</span>
+            <span class="date">{{ post['created'].strftime('%Y-%m-%d') }}</span>
+          </div>
         </div>
-        {% if g.user['id'] == post['author_id'] %}
-          <a class="action" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
-        {% endif %}
+        <div class="post-actions">
+          {% if g.user['id'] == post['author_id'] %}
+            <a class="action" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
+          {% endif %}
+        </div>
       </header>
-      <p class="body">{{ post['body'][0:10] }}...</p>
+      
+      <p class="body">{{ post['body'][0:100] }}{% if post['body']|length > 100 %}...{% endif %}</p>
+      
+      <!-- Rating Display -->
+      <div class="rating-section">
+        {% if post['rating_count'] and post['rating_count'] > 0 %}
+          <div class="rating-display">
+            <span class="stars">
+              {% set avg_rating = (post['rating_total'] / post['rating_count']) | round(1) %}
+              {% for i in range(5) %}
+                {% if i < avg_rating %}
+                  <span class="star filled">⭐</span>
+                {% else %}
+                  <span class="star">☆</span>
+                {% endif %}
+              {% endfor %}
+            </span>
+            <span class="rating-text">{{ "%.1f"|format(avg_rating) }} ({{ post['rating_count'] }} ratings)</span>
+          </div>
+        {% else %}
+          <div class="rating-display">
+            <span class="stars">
+              <span class="star">☆</span>
+              <span class="star">☆</span>
+              <span class="star">☆</span>
+              <span class="star">☆</span>
+              <span class="star">☆</span>
+            </span>
+            <span class="rating-text">No ratings yet</span>
+          </div>
+        {% endif %}
+        
+        <!-- Quick Rating Form -->
+        {% if g.user %}
+          <form action="{{ url_for('blog.rate', id=post['id']) }}" method="post" class="quick-rating-form">
+            <span class="rate-label">Rate this post:</span>
+            <div class="star-buttons">
+              <button type="submit" name="rating" value="1" class="star-btn" title="1 star">⭐</button>
+              <button type="submit" name="rating" value="2" class="star-btn" title="2 stars">⭐⭐</button>
+              <button type="submit" name="rating" value="3" class="star-btn" title="3 stars">⭐⭐⭐</button>
+              <button type="submit" name="rating" value="4" class="star-btn" title="4 stars">⭐⭐⭐⭐</button>
+              <button type="submit" name="rating" value="5" class="star-btn" title="5 stars">⭐⭐⭐⭐⭐</button>
+            </div>
+          </form>
+        {% endif %}
+      </div>
     </article>
     {% if not loop.last %}
       <hr>
